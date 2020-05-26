@@ -1,0 +1,9 @@
+# Jekyll configuration
+# 
+# GH Pages build system does read this file. 
+# 
+
+source: pages
+
+# https://blog.github.com/2017-11-29-use-any-theme-with-github-pages/
+remote_theme: pmarsceill/just-the-docs

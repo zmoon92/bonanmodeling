@@ -1,0 +1,10 @@
+
+# local Jekyll build files
+/_site
+/vendor
+#Gemfile
+
+# GH Pages has its own versions, doesn't look at this
+Gemfile.lock
+
+/.vscode
