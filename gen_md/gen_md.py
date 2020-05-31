@@ -5,6 +5,7 @@ Generate md files from the Matlab scripts.
 """
 
 # from glob import glob
+import os
 from pathlib import Path
 
 import yaml
@@ -47,6 +48,7 @@ def load_matlab_src_paths():
     for k, p in zip(keys, script_folders):
         main_program = list(p.glob("./sp_??_??.m"))[0]
         aux_programs = [p for p in p.glob("./*.m") if p != main_program] 
+        # TODO: sort these ^ e.g. case-agnostic alphabetical 
         data[k] = {
             'main_program': main_program,
             'aux_programs': aux_programs,
@@ -97,6 +99,74 @@ def load_data():
         }
 
     return chapter_titles, sp_data
+
+
+def run_matlab_scripts(matlab_src_paths):
+    """Use matlab.engine to run the Matlab scripts and save the outputs.
+
+    matlab_src_paths : list
+        of dicts with keys ["main_program", "aux_programs"]
+        created by fn `load_matlab_src_paths`
+        
+    """
+
+    # start matlab
+    # `-nodisplay` by default. this warning when saving figs:
+    # Warning: MATLAB cannot use OpenGL for printing when started with the '-nodisplay' option.
+    # and the figs look a bit different (not as good)
+    import matlab.engine
+    #eng = matlab.engine.start_matlab()
+    eng = matlab.engine.start_matlab("-desktop")  # only works if X forwarding enabled and working
+
+    # prepare to catch stdout/err messages
+    import io
+    out = io.StringIO()
+    err = io.StringIO()
+
+    # must be able to find our `save_open_figs` fn on the search path
+    eng.addpath("./")
+
+    for d in matlab_src_paths: 
+        p_main_program = d["main_program"]
+        dir_main_program = p_main_program.parent        
+        main_program = p_main_program.stem  # to run in matlab, no ext
+
+        # addpath so Matlab can find
+        eng.addpath(str(dir_main_program))
+
+        # call the main program script
+
+        # change directory
+        # because some of the programs write output files to the cwd
+        #os.chdir(dir_main_program)  # note requires py36+
+        eng.cd(str(dir_main_program))         
+   
+        to_call = getattr(eng, main_program)
+        try:
+            ret = to_call(nargout=0, stdout=out, stderr=err)
+        except matlab.engine.MatlabExecutionError as e:
+            print(f"{main_program} failed, with error:\n{e}")
+
+        #print(ret)
+        #print(out.read())
+        #print(err.read())
+
+        # save messages if they exist
+        if out.read().strip():
+            out.write(dir_main_program / f"{main_program}_out.txt")
+        if err.read().strip():
+            err.write(dir_main_program / f"{main_program}_err.txt")
+
+        # save any open figures
+        eng.save_open_figs(str(dir_main_program), nargout=0)
+
+        # check for new files created
+        # and change names if necessary?
+        # or we can assume that any new files that don't follow these^ conventions
+        # or are .m files are new, products of the program
+    
+    # close the engine 
+    eng.exit()
 
 
 def create_md(sp_data, matlab_src_data):
@@ -183,6 +253,17 @@ if __name__ == "__main__":
 
     # test
     sp_id_test = "sp_14_03"  # has aux files
+
+    #run_matlab_scripts([matlab_srcs[sp_id_test]])
+
     s = create_md(sp_data[sp_id_test], matlab_srcs[sp_id_test])
     write_md(sp_id_test, s)
     # write_md(sp_id_test, s, parent_dir="ch14")
+
+
+    # run all Matlab scripts
+    run_matlab_scripts([v for k, v in sorted(matlab_srcs.items())])
+    
+
+
+
