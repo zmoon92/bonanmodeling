@@ -71,6 +71,17 @@ def md_matlab_program(p, main=True):
     return s
 
 
+def _count_lines(file):
+    count = 0
+    for _ in file.readlines():
+        count += 1
+
+    return count
+
+
+def _count_lines_s(s):
+    return len(s.split("\n"))
+
 
 def md_text_output(p):
     """Create markdown for a toggler to show given output file.
@@ -83,7 +94,10 @@ def md_text_output(p):
     file_name = p.name
 
     with open(p, "r") as f:
+        # file_line_count = _count_lines(f)  # < need to reset to beginning after this
         file_contents = f.read().strip()
+
+    file_line_count = _count_lines_s(file_contents)
 
     # detect if it is the standard output file
     if file_name[:3] == "sp_" and file_name[-8:] == "_out.txt":
@@ -104,7 +118,12 @@ def md_text_output(p):
 
     sep = '<span class="program-code-link-sep">|</span>'
 
-    s = f"""
+
+    # TODO: GH also has a size limit for what it will show in the normal browser
+    # should not put the link for those that are too big
+    if file_line_count <= 200:
+
+        s = f"""
 <details>
   <summary markdown="span">
     `{file_name}`{file_note}
@@ -120,7 +139,19 @@ def md_text_output(p):
 {{: {code_css}}}
 
 </details>
-    """.strip()
+        """.strip()
+
+    else:  # file too long. don't actually put it in there.
+
+        s = f"""
+<span class="main-program-output-text-file-links-only">
+  `{file_name}`{file_note}
+  {sep}
+  [View on GitHub {{% octicon mark-github %}}]({REPO_ROOT_URL_FOR_LINKS}/{file_repo_rel_path})
+  {sep}
+  [View raw]({REPO_ROOT_URL_FOR_RAW_LINKS}/{file_repo_rel_path})
+</span>
+        """.strip()
 
     return s
 
@@ -149,7 +180,8 @@ def md_text_outputs(sp_id):
         for i, file in enumerate(sorted(files)):
             s_files.append(md_text_output(file))
 
-        return "\n\n".join([header] + s_files)
+        # return "\n\n".join([header] + s_files)
+        return "\n".join([header] + s_files)
 
     else:
         return ""
