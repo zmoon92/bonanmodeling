@@ -25,7 +25,11 @@ PROGRAM_PAGE_MD_FORMAT = """
 ## Main program
 
 <details>
-  <summary markdown="span">`{main_program_name}`</summary>
+  <summary markdown="span">
+    `{main_program_name}`
+    |
+    [View on GitHub {{% octicon mark-github %}}](https://github.com/zmoon92/bonanmodeling/tree/master/{{{{ page.main_program_repo_rel_path }}}})
+  </summary>
 
 ```matlab
 {main_program_src}

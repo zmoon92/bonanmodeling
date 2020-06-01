@@ -13,3 +13,5 @@ git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
 gem 'github-pages', group: :jekyll_plugins
 
+# Whitelisted plugins not included in runtime dependencies.
+gem "jekyll-octicons", :group => :jekyll_plugins

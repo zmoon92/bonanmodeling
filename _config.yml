@@ -3,7 +3,7 @@
 # GH Pages build system does read this file. 
 # 
 
-source: pages
+source: docs
 
 # https://blog.github.com/2017-11-29-use-any-theme-with-github-pages/
 remote_theme: pmarsceill/just-the-docs
@@ -13,3 +13,24 @@ markdown: kramdown
 
 kramdown:
   parse_block_html: true
+
+# We can use those from the plugin whitelist here:
+# https://github.com/github/pages-gem/blob/master/lib/github-pages/plugins.rb
+#
+# These are activated by default as part of the gh-pages Gem:
+# - jekyll-coffeescript
+# - jekyll-commonmark-ghpages
+# - jekyll-gist
+# - jekyll-github-metadata
+# - jekyll-paginate
+# - jekyll-relative-links
+# - jekyll-optional-front-matter
+# - jekyll-readme-index
+# - jekyll-default-layout
+# - jekyll-titles-from-headings
+plugins:
+  - jekyll-octicons
+
+exclude:
+  - README.md
+
