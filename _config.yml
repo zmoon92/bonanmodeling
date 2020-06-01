@@ -7,3 +7,9 @@ source: pages
 
 # https://blog.github.com/2017-11-29-use-any-theme-with-github-pages/
 remote_theme: pmarsceill/just-the-docs
+
+# markdown: CommonMarkGhPages
+markdown: kramdown
+
+kramdown:
+  parse_block_html: true

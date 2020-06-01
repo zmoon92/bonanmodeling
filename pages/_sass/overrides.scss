@@ -3,6 +3,12 @@
    https://pmarsceill.github.io/just-the-docs/docs/customization/
 */
 
-div#main-program-code {
-    display: none;
+
+// the default styles hide the triangle. we don't want that
+summary {
+    display: list-item;
+}
+
+#main-program-code {
+    line-height: 1.05;
 }
