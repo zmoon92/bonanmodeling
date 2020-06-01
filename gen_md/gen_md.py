@@ -135,8 +135,11 @@ def load_matlab_src_paths():
     data = {}
     for k, p in zip(keys, script_folders):
         main_program = list(p.glob("./sp_??_??.m"))[0]
-        aux_programs = [p for p in p.glob("./*.m") if p != main_program] 
-        # TODO: sort these ^ e.g. case-agnostic alphabetical 
+        aux_programs = sorted(
+            [p for p in p.glob("./*.m") if p != main_program],
+            key=lambda p: p.stem.lower()
+        )
+        # ^ we sort these case-agnostic alphabetical to avoid annoying diffs
         data[k] = {
             'main_program': main_program,
             'aux_programs': aux_programs,
