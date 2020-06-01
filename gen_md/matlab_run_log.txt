@@ -1,36 +1,201 @@
-[If you need expert assistance with Matlab, please consider my professional <a href="https://UndocumentedMatlab.com/consulting">consulting</a>/<a href="https://UndocumentedMatlab.com/training">training</a> services (<a href="https://UndocumentedMatlab.com">https://UndocumentedMatlab.com</a>)]
-sp_07_01 failed, with error:
 
-  File /gpfs/group/juf15/default/zlm1/gh/bonanmodeling/sp_07_01/sp_07_01.m, line 332, in sp_07_01
-Dimensions of arrays being concatenated are not consistent.
+Run log
+=======
 
-sp_11_01 failed, with error:
+begin: 2020-06-01 15:19:44.907887
 
-  File /gpfs/group/juf15/default/zlm1/gh/bonanmodeling/sp_11_01/sp_11_01.m, line 9, in sp_11_01
-Unable to perform assignment because dot indexing is not supported for variables of this type.
+    
+sp_02_01
+--------
+        
+success: true
 
-sp_12_01 failed, with error:
+time: 14.6 s
 
-  File /gpfs/group/juf15/default/zlm1/gh/bonanmodeling/sp_12_01/sp_12_01.m, line 11, in sp_12_01
-Unable to perform assignment because dot indexing is not supported for variables of this type.
 
-sp_12_02 failed, with error:
+sp_02_02
+--------
+        
+success: true
 
-  File /gpfs/group/juf15/default/zlm1/gh/bonanmodeling/sp_12_02/sp_12_02.m, line 10, in sp_12_02
-Unable to perform assignment because dot indexing is not supported for variables of this type.
+time: 5.2 s
 
-sp_13_01 failed, with error:
 
-  File /gpfs/group/juf15/default/zlm1/gh/bonanmodeling/sp_13_01/sp_13_01.m, line 12, in sp_13_01
-Unable to perform assignment because dot indexing is not supported for variables of this type.
+sp_05_01
+--------
+        
+success: true
 
-sp_14_03 failed, with error:
+time: 2.8 s
 
-  File /gpfs/group/juf15/default/zlm1/gh/bonanmodeling/sp_14_03/sp_14_03.m, line 9, in sp_14_03
-Unable to perform assignment because dot indexing is not supported for variables of this type.
 
-sp_16_01 failed, with error:
+sp_05_02
+--------
+        
+success: true
 
-  File /gpfs/group/juf15/default/zlm1/gh/bonanmodeling/sp_16_01/sp_16_01.m, line 123, in sp_16_01
-Index in position 1 is invalid. Array indices must be positive integers or logical values.
+time: 25.5 s
+
+
+sp_05_03
+--------
+        
+success: true
+
+time: 2.0 s
+
+
+sp_06_01
+--------
+        
+success: true
+
+time: 0.1 s
+
+
+sp_06_02
+--------
+        
+success: true
+
+time: 0.1 s
+
+
+sp_07_01
+--------
+        
+success: true
+
+time: 3.4 s
+
+
+sp_08_01
+--------
+        
+success: true
+
+time: 3.9 s
+
+
+sp_08_02
+--------
+        
+success: true
+
+time: 623.9 s
+
+
+sp_09_01
+--------
+        
+success: true
+
+time: 4.0 s
+
+
+sp_10_01
+--------
+        
+success: true
+
+time: 1.4 s
+
+
+sp_10_02
+--------
+        
+success: true
+
+time: 0.4 s
+
+
+sp_11_01
+--------
+        
+success: true
+
+time: 1.9 s
+
+
+sp_12_01
+--------
+        
+success: true
+
+time: 1.5 s
+
+
+sp_12_02
+--------
+        
+success: true
+
+time: 1.5 s
+
+
+sp_13_01
+--------
+        
+success: true
+
+time: 0.5 s
+
+
+sp_14_01
+--------
+        
+success: true
+
+time: 0.1 s
+
+
+sp_14_02
+--------
+        
+success: true
+
+time: 0.2 s
+
+
+sp_14_03
+--------
+        
+success: true
+
+time: 1.7 s
+
+
+sp_14_04
+--------
+        
+success: true
+
+time: 0.4 s
+
+
+sp_16_01
+--------
+        
+success: true
+
+time: 1.4 s
+
+
+sp_17_01
+--------
+        
+success: true
+
+time: 9.1 s
+
+
+sp_18_01
+--------
+        
+success: true
+
+time: 66.9 s
+
+
+end: 2020-06-01 15:32:37.418617
 

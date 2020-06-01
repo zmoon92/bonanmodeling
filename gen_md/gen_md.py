@@ -48,7 +48,7 @@ def md_matlab_program(p, main=True):
     else:  # aux program
         code_css = ".aux-program-code"  # can be more than one
 
-    program_repo_rel_path = str(p.relative_to(ROOT))
+    program_repo_rel_path = p.relative_to(ROOT).as_posix()
 
     sep = '<span class="program-code-link-sep">|</span>'
 
@@ -222,14 +222,30 @@ def run_matlab_scripts(matlab_src_paths):
     # must be able to find our `save_open_figs` fn on the search path
     eng.addpath("./")
 
+    # too lazy to use logging
+    import datetime
+    import time
+    s_run_log = f"""
+Run log
+=======
+
+begin: {datetime.datetime.now()}
+
+    """
+    # TODO: change to open log file here and write along the way so can watch progress
+
     # for sp_id, d in sorted(matlab_src_paths.items()): 
     for _, d in sorted(matlab_src_paths.items()): 
         p_main_program = d["main_program"]
         dir_main_program = p_main_program.parent        
         main_program = p_main_program.stem  # to run in matlab, no ext
 
-        # addpath so Matlab can find
-        eng.addpath(str(dir_main_program))
+        s_run_log += f"""
+{main_program}
+--------
+        """
+
+        start_i = time.perf_counter()
 
         # call the main program script
 
@@ -239,15 +255,20 @@ def run_matlab_scripts(matlab_src_paths):
         s_dir_main_program = dir_main_program.as_posix()  # matlab always uses /
         eng.cd(s_dir_main_program)         
    
-        # TODO: close open figures before running
-        # else the previous fig gets saved in the dif when a program fails
-
+        # close open figures before running
+        # else the previous fig gets saved again in the new dir when a program fails or a program doesn't produce a fig
+        eng.close("all")
+        eng.clear(nargout=0)  # clear workspace variables from previous run
+    
         to_call = getattr(eng, main_program)
         try:
             # ret = to_call(nargout=0, stdout=out, stderr=err)
             to_call(nargout=0, stdout=out, stderr=err)
+            s_run_log += f"\nsuccess: true\n"
         except matlab.engine.MatlabExecutionError as e:
-            print(f"{main_program} failed, with error:\n{e}")
+            #print(f"{main_program} failed, with error:\n{e}")
+            s_run_log +=f"\nsuccess: false\n"
+            s_run_log += f"error:\n{e}"
 
         #print(ret)
         #print(out.read())
@@ -260,6 +281,7 @@ def run_matlab_scripts(matlab_src_paths):
             err.write(dir_main_program / f"{main_program}_err.txt")
 
         # save any open figures
+        eng.delete("*.png", nargout=0)  # ensure only the ones that belong are saved here
         eng.save_open_figs(s_dir_main_program, nargout=0)
 
         # check for new files created
@@ -267,8 +289,19 @@ def run_matlab_scripts(matlab_src_paths):
         # or we can assume that any new files that don't follow these^ conventions
         # or are .m files are new, products of the program
     
+        # log time it took to complete
+        elapsed_i = time.perf_counter() - start_i
+        s_run_log += f"\ntime: {elapsed_i:.1f} s\n\n"
+
+
     # close the engine 
     eng.exit()
+
+    # write log
+    s_run_log += f"\nend: {datetime.datetime.now()}\n\n"
+    with open("matlab_run_log.txt", "w") as f:
+        f.write(s_run_log)
+    # this way we avoid getting the annoying UndocumentedMatlab HTML message in the log
 
 
 def create_md(sp_data, matlab_src_data):
@@ -350,23 +383,23 @@ def create_md(sp_data, matlab_src_data):
     # figures
     figures = md_figures(sp_data["sp_id"])
 
-    # hardcode hack for now
-    last_failed = [
-        "sp_07_01", 
-        "sp_11_01",
-        "sp_12_01",
-        "sp_12_02",
-        "sp_13_01",
-        "sp_14_03",
-        "sp_16_01",
-    ]
-    if sp_data["sp_id"] in last_failed:
-        figures = """
-Running the program failed.
+#     # hardcode hack for now
+#     last_failed = [
+#         "sp_07_01", 
+#         "sp_11_01",
+#         "sp_12_01",
+#         "sp_12_02",
+#         "sp_13_01",
+#         "sp_14_03",
+#         "sp_16_01",
+#     ]
+#     if sp_data["sp_id"] in last_failed:
+#         figures = """
+# Running the program failed.
 
-See [the run log](https://github.com/zmoon92/bonanmodeling/blob/gh-pages-dev/gen_md/matlab_run_log.txt).
+# # See [the run log](https://github.com/zmoon92/bonanmodeling/blob/gh-pages-dev/gen_md/matlab_run_log.txt).
 
-        """.strip()
+# #         """.strip()
 
 
 
@@ -444,10 +477,12 @@ def run_matlab_script(sp_id, matlab_src_paths):
 
     if isinstance(sp_id, str):
         sp_id_run = [sp_id]
+    elif isinstance(sp_id, list):
+        sp_id_run = sp_id[:]
 
     matlab_src_paths_run = {
         k: v
-        for k, v in matlab_src_paths
+        for k, v in matlab_src_paths.items()
         if k in sp_id_run
     }
 
@@ -471,8 +506,11 @@ if __name__ == "__main__":
     # write_md(sp_id_test, s)
     # write_md(sp_id_test, s, parent_dir="ch14")
 
+    #> run all matlab scripts
+    # run_matlab_scripts(matlab_srcs)
+
     #> create and write chapter pages
-    chapter_pages(chapter_titles)
+    # chapter_pages(chapter_titles)
 
     #> create and write all md for program pages
     for sp_id, sp_data_id in sp_data.items():
