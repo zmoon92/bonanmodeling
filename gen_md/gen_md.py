@@ -13,7 +13,7 @@ import yaml
 
 ROOT = Path('../')  # project root. assumes we are running this from this scripts location!
 
-MD_OUT_ROOT = ROOT / "pages"
+MD_OUT_ROOT = ROOT / "docs/pages"
 
 PROGRAM_PAGE_MD_FORMAT = """
 ---
