@@ -222,14 +222,30 @@ def run_matlab_scripts(matlab_src_paths):
     # must be able to find our `save_open_figs` fn on the search path
     eng.addpath("./")
 
+    # too lazy to use logging
+    import datetime
+    import time
+    s_run_log = f"""
+Run log
+=======
+
+begin: {datetime.datetime.now()}
+
+    """
+    # TODO: change to open log file here and write along the way so can watch progress
+
     # for sp_id, d in sorted(matlab_src_paths.items()): 
     for _, d in sorted(matlab_src_paths.items()): 
         p_main_program = d["main_program"]
         dir_main_program = p_main_program.parent        
         main_program = p_main_program.stem  # to run in matlab, no ext
 
-        # addpath so Matlab can find
-        eng.addpath(str(dir_main_program))
+        s_run_log += f"""
+{main_program}
+--------
+        """
+
+        start_i = time.perf_counter()
 
         # call the main program script
 
@@ -239,16 +255,20 @@ def run_matlab_scripts(matlab_src_paths):
         s_dir_main_program = dir_main_program.as_posix()  # matlab always uses /
         eng.cd(s_dir_main_program)         
    
-        # TODO: close open figures before running
+        # close open figures before running
         # else the previous fig gets saved again in the new dir when a program fails or a program doesn't produce a fig
         eng.close("all")
-
+        eng.clear(nargout=0)  # clear workspace variables from previous run
+    
         to_call = getattr(eng, main_program)
         try:
             # ret = to_call(nargout=0, stdout=out, stderr=err)
             to_call(nargout=0, stdout=out, stderr=err)
+            s_run_log += f"\nsuccess: true\n"
         except matlab.engine.MatlabExecutionError as e:
-            print(f"{main_program} failed, with error:\n{e}")
+            #print(f"{main_program} failed, with error:\n{e}")
+            s_run_log +=f"\nsuccess: false\n"
+            s_run_log += f"error:\n{e}"
 
         #print(ret)
         #print(out.read())
@@ -269,8 +289,19 @@ def run_matlab_scripts(matlab_src_paths):
         # or we can assume that any new files that don't follow these^ conventions
         # or are .m files are new, products of the program
     
+        # log time it took to complete
+        elapsed_i = time.perf_counter() - start_i
+        s_run_log += f"\ntime: {elapsed_i:.1f} s\n\n"
+
+
     # close the engine 
     eng.exit()
+
+    # write log
+    s_run_log += f"\nend: {datetime.datetime.now()}\n\n"
+    with open("matlab_run_log.txt", "w") as f:
+        f.write(s_run_log)
+    # this way we avoid getting the annoying UndocumentedMatlab HTML message in the log
 
 
 def create_md(sp_data, matlab_src_data):
@@ -446,10 +477,12 @@ def run_matlab_script(sp_id, matlab_src_paths):
 
     if isinstance(sp_id, str):
         sp_id_run = [sp_id]
+    elif isinstance(sp_id, list):
+        sp_id_run = sp_id[:]
 
     matlab_src_paths_run = {
         k: v
-        for k, v in matlab_src_paths
+        for k, v in matlab_src_paths.items()
         if k in sp_id_run
     }
 

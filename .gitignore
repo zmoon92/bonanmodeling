@@ -8,3 +8,5 @@
 Gemfile.lock
 
 /.vscode
+__pycache__
+
