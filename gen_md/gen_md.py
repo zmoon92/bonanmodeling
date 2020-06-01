@@ -15,38 +15,112 @@ ROOT = Path('../')  # project root. assumes we are running this from this script
 
 MD_OUT_ROOT = ROOT / "docs/pages"
 
-PROGRAM_PAGE_MD_FORMAT = """
----
-{yaml_header}
----
+# to use when creating the links to the source files on GH
+# can also use Jekyll github-metadata plugin
+REPO_ROOT_URL_FOR_LINKS = "https://github.com/zmoon92/bonanmodeling/tree/master"
 
-# Code
 
-## Main program
 
+def md_matlab_program(p, main=True):
+    """Create markdown to add to page for a given Matlab program.
+    
+    p : Path
+        to the Matlab program
+
+    main : bool
+        whether to tag as a main program 
+        (with the kramdown IAL)
+
+    Returns
+    -------
+    str
+        of the md snippet to be included in the page
+    
+    """
+
+    program_name = p.name
+
+    with open(p, "r") as f:
+        program_src = f.read().strip()
+
+    if main:
+        code_css = "#main-program-code"
+    else:  # aux program
+        code_css = ".aux-program-code"  # can be more than one
+
+    program_repo_rel_path = str(p.relative_to(ROOT))
+
+    sep = '<span class="program-code-link-sep">|</span>'
+
+    s = f"""
 <details>
   <summary markdown="span">
-    `{main_program_name}`
-    |
-    [View on GitHub {{% octicon mark-github %}}](https://github.com/zmoon92/bonanmodeling/tree/master/{{{{ page.main_program_repo_rel_path }}}})
+    `{program_name}`
+    {sep}
+    [View on GitHub {{% octicon mark-github %}}]({REPO_ROOT_URL_FOR_LINKS}/{program_repo_rel_path})
   </summary>
 
 ```matlab
-{main_program_src}
+{program_src}
 ```
-{{: #main-program-code}}
+{{: {code_css}}}
 
 </details>
+    """.strip()
 
-# Output
+    return s
 
-""".strip()
+
+def md_figure(p, num=None):
+    """Generate md snippet for given figure path."""
+    if num is None:
+        num = "X"
+
+    # TODO: possibly soft-link the outputs to a location in /docs instead
+    # but hack for now
+    base_url = "https://raw.githubusercontent.com/zmoon92/bonanmodeling/gh-pages-dev"
+
+    p_rr = p.relative_to(ROOT).as_posix()
+    url = f"{base_url}/{p_rr}"
+
+    s = f"""
+Figure {num}
+
+<img src="{url}">
+
+    """.strip()
+
+    return s
+
+
+def md_figures(sp_id):
+    """For sp_id, search for output figures and generated md."""
+
+    # TODO: add fn to get the matlab programs as dict with sp_id keys. and use that the other places as well
+    dirs = get_matlab_program_dirs()
+    keys = [p.stem for p in dirs]
+    dir_ = dict(zip(keys, dirs))[sp_id]
+
+    figs = dir_.glob("*.png")
+
+    if figs:
+
+        s_figs = []
+        for i, fig in enumerate(sorted(figs)):
+            s_figs.append(md_figure(fig, num=i+1))
+
+        return "\n\n".join(s_figs)
+
+    else:
+
+        return ""
+
 
 
 def get_matlab_program_dirs():
 
     folders = ROOT.glob('./sp_??_??')
-    return folders
+    return list(folders)
     # return [p.stem for p in folders]
 
 
@@ -122,17 +196,21 @@ def load_data():
 def run_matlab_scripts(matlab_src_paths):
     """Use matlab.engine to run the Matlab scripts and save the outputs.
 
-    matlab_src_paths : list
+    matlab_src_paths : dict
         of dicts with keys ["main_program", "aux_programs"]
         created by fn `load_matlab_src_paths`
         
     """
 
+    # TODO: more informative run log
+    # matlab version, date/time start/finish, status for each program,
+    # so can link to that on the page
+
     # start matlab
     # `-nodisplay` by default. this warning when saving figs:
     # Warning: MATLAB cannot use OpenGL for printing when started with the '-nodisplay' option.
     # and the figs look a bit different (not as good)
-    import matlab.engine
+    import matlab.engine  # pylint: disable=import-error
     #eng = matlab.engine.start_matlab()
     eng = matlab.engine.start_matlab("-desktop")  # only works if X forwarding enabled and working
 
@@ -144,7 +222,8 @@ def run_matlab_scripts(matlab_src_paths):
     # must be able to find our `save_open_figs` fn on the search path
     eng.addpath("./")
 
-    for d in matlab_src_paths: 
+    # for sp_id, d in sorted(matlab_src_paths.items()): 
+    for _, d in sorted(matlab_src_paths.items()): 
         p_main_program = d["main_program"]
         dir_main_program = p_main_program.parent        
         main_program = p_main_program.stem  # to run in matlab, no ext
@@ -157,11 +236,16 @@ def run_matlab_scripts(matlab_src_paths):
         # change directory
         # because some of the programs write output files to the cwd
         #os.chdir(dir_main_program)  # note requires py36+
-        eng.cd(str(dir_main_program))         
+        s_dir_main_program = dir_main_program.as_posix()  # matlab always uses /
+        eng.cd(s_dir_main_program)         
    
+        # TODO: close open figures before running
+        # else the previous fig gets saved in the dif when a program fails
+
         to_call = getattr(eng, main_program)
         try:
-            ret = to_call(nargout=0, stdout=out, stderr=err)
+            # ret = to_call(nargout=0, stdout=out, stderr=err)
+            to_call(nargout=0, stdout=out, stderr=err)
         except matlab.engine.MatlabExecutionError as e:
             print(f"{main_program} failed, with error:\n{e}")
 
@@ -176,7 +260,7 @@ def run_matlab_scripts(matlab_src_paths):
             err.write(dir_main_program / f"{main_program}_err.txt")
 
         # save any open figures
-        eng.save_open_figs(str(dir_main_program), nargout=0)
+        eng.save_open_figs(s_dir_main_program, nargout=0)
 
         # check for new files created
         # and change names if necessary?
@@ -234,9 +318,9 @@ def create_md(sp_data, matlab_src_data):
     })
 
 
-    # main program Matlab source code
-    with open(matlab_src_data["main_program"], "r") as f:
-        main_program_src = f.read().strip()
+    # # main program Matlab source code
+    # with open(matlab_src_data["main_program"], "r") as f:
+    #     main_program_src = f.read().strip()
 
     # combine YAMLs
     yaml_note = "# note: this file is automatically generated!"
@@ -245,12 +329,67 @@ def create_md(sp_data, matlab_src_data):
     yaml_header = "\n".join([yaml_note, yaml_header_data])
     # TODO: instead of just `# `, have `# header` for each YAML section?
 
-    # use the format to create the str
-    s = PROGRAM_PAGE_MD_FORMAT.format(
-        yaml_header=yaml_header,
-        main_program_src=main_program_src,
-        main_program_name=f"{sp_id}.m",
-    )
+    # # use the format to create the str
+    # s = PROGRAM_PAGE_MD_FORMAT.format(
+    #     yaml_header=yaml_header,
+    #     main_program_src=main_program_src,
+    #     main_program_name=f"{sp_id}.m",
+    # )
+
+    # create Matlab program md snippets
+    md_main_program = md_matlab_program(matlab_src_data["main_program"])
+
+    if matlab_src_data["aux_programs"]:
+        md_aux_programs = "## Aux. programs\n\n" + "\n\n".join([
+            md_matlab_program(p, main=False)
+            for p in matlab_src_data["aux_programs"]
+        ])
+    else:
+        md_aux_programs = ""
+
+    # figures
+    figures = md_figures(sp_data["sp_id"])
+
+    # hardcode hack for now
+    last_failed = [
+        "sp_07_01", 
+        "sp_11_01",
+        "sp_12_01",
+        "sp_12_02",
+        "sp_13_01",
+        "sp_14_03",
+        "sp_16_01",
+    ]
+    if sp_data["sp_id"] in last_failed:
+        figures = """
+Running the program failed.
+
+See [the run log](https://github.com/zmoon92/bonanmodeling/blob/gh-pages-dev/gen_md/matlab_run_log.txt).
+
+        """.strip()
+
+
+
+    # create the str here so we can use f-string
+    s = f"""
+---
+{yaml_header}
+---
+
+# Code
+
+## Main program
+
+{md_main_program}
+
+{md_aux_programs}
+
+# Output
+
+{figures}
+
+    """.strip()
+
 
     return s
 
@@ -274,6 +413,7 @@ def write_md(sp_id, s, parent_dir=None):
 
 def chapter_pages(chapter_titles):
     """Create the chapter pages."""
+    # TODO: add descriptions from http://www.cgd.ucar.edu/staff/bonan/ecomod/index.html?
 
     for i, (num, title) in enumerate(sorted(chapter_titles.items())):
         
@@ -294,34 +434,47 @@ This is a chapter page.
             f.write(s)
 
 
+
+def run_matlab_script(sp_id, matlab_src_paths):
+    """Run selected program(s) only, for testing purposes.
+    
+    sp_id : str or list(str)
+        sp_id's to run
+    """
+
+    if isinstance(sp_id, str):
+        sp_id_run = [sp_id]
+
+    matlab_src_paths_run = {
+        k: v
+        for k, v in matlab_src_paths
+        if k in sp_id_run
+    }
+
+    run_matlab_scripts(matlab_src_paths_run)
+
+
+
+
 if __name__ == "__main__":
 
     matlab_srcs = load_matlab_src_paths()
 
     chapter_titles, sp_data = load_data()
 
-    # test
+    #> test on one main program
     # sp_id_test = "sp_14_03"  # has aux files
 
-    #run_matlab_scripts([matlab_srcs[sp_id_test]])
+    # run_matlab_script(sp_id_test, matlab_srcs)
 
     # s = create_md(sp_data[sp_id_test], matlab_srcs[sp_id_test])
     # write_md(sp_id_test, s)
     # write_md(sp_id_test, s, parent_dir="ch14")
 
-
-    # run all Matlab scripts
-    #run_matlab_scripts([v for k, v in sorted(matlab_srcs.items())])
-    
-
-    # add number to chapter title as hack for now
-    # chapter_titles = {k: f"{k}. {v}" for k, v in chapter_titles.items()}
-    # ^ messes up nav children identification
-
-    # create chapter pages
+    #> create and write chapter pages
     chapter_pages(chapter_titles)
 
-    # write all md
+    #> create and write all md for program pages
     for sp_id, sp_data_id in sp_data.items():
         ch_id = f"ch{sp_data_id['chapter_num']:02d}"
         s = create_md(sp_data_id, matlab_srcs[sp_id])

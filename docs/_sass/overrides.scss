@@ -9,6 +9,12 @@ summary {
     display: list-item;
 }
 
-#main-program-code {
+#main-program-code, .aux-program-code {
     line-height: 1.05;
+}
+
+span.program-code-link-sep {
+    // display: inline-block;
+    margin-left: 0.2em;
+    margin-right: 0.2em;
 }
