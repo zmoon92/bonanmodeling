@@ -1,0 +1,7 @@
+Monin-Obuhkov similarity theory
+L =         -25.842
+u* =           0.382
+T* =          -0.433
+H =         194.979
+gam =           5.354
+gac =           7.419

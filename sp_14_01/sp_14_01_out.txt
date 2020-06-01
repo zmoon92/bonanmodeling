@@ -1,0 +1,10 @@
+ 
+Leaf type =                     Planophile
+Sum of leaf angle distribution =          1.0000
+Mean leaf angle =         26.7622
+Solar zenith =         30.0000
+G(Z) =          0.7374
+Kb =          0.8515
+Ross index =          0.4750
+G(Z) =          0.6947
+Kb =          0.8022

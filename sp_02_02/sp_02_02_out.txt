@@ -1,0 +1,27 @@
+ 
+Leaf type =      Planophile
+     Angle         beta            exact 
+      5.00          0.2251          0.2205 
+     15.00          0.2179          0.2073 
+     25.00          0.1847          0.1825 
+     35.00          0.1456          0.1491 
+     45.00          0.1066          0.1111 
+     55.00          0.0707          0.0731 
+     65.00          0.0401          0.0397 
+     75.00          0.0167          0.0149 
+     85.00          0.0024          0.0017 
+ 
+beta distribution 
+Sum of leaf angle distribution =          1.0098
+Mean leaf angle =         26.8582
+ 
+Exact solution 
+Sum of leaf angle distribution =          1.0000
+Mean leaf angle =         26.8558
+ 
+Analytical solution 
+Mean leaf angle =         26.7622
+ 
+Ross index 
+beta distribution =          0.4888
+   Exact solution =          0.4764

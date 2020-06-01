@@ -7,6 +7,7 @@ Generate md files from the Matlab scripts.
 # from glob import glob
 import os
 from pathlib import Path
+import shutil
 
 import yaml
 
@@ -196,12 +197,18 @@ def load_data():
     return chapter_titles, sp_data
 
 
-def run_matlab_scripts(matlab_src_paths):
+def run_matlab_scripts(matlab_src_paths, *, 
+    save_figs=True,
+):
     """Use matlab.engine to run the Matlab scripts and save the outputs.
 
     matlab_src_paths : dict
         of dicts with keys ["main_program", "aux_programs"]
         created by fn `load_matlab_src_paths`
+    
+    save_figs : bool
+        we can avoid annoying diffs by not re-saving the figs
+        (if we don't expect changes in them)
         
     """
 
@@ -217,10 +224,8 @@ def run_matlab_scripts(matlab_src_paths):
     #eng = matlab.engine.start_matlab()
     eng = matlab.engine.start_matlab("-desktop")  # only works if X forwarding enabled and working
 
-    # prepare to catch stdout/err messages
+    # we will use StringIO buffers to catch Matlab text output
     import io
-    out = io.StringIO()
-    err = io.StringIO()
 
     # must be able to find our `save_open_figs` fn on the search path
     eng.addpath("./")
@@ -248,8 +253,13 @@ begin: {datetime.datetime.now()}
 --------
         """
 
+        # start count
         start_i = time.perf_counter()
 
+        # preprare to catch messages in the Matlab command window
+        out = io.StringIO()
+        err = io.StringIO()
+        
         # call the main program script
 
         # change directory
@@ -278,20 +288,32 @@ begin: {datetime.datetime.now()}
         #print(err.read())
 
         # save messages if they exist
-        if out.read().strip():
-            out.write(dir_main_program / f"{main_program}_out.txt")
-        if err.read().strip():
-            err.write(dir_main_program / f"{main_program}_err.txt")
+        # .getvalue() gives the whole thing, but a copy
+        if out.getvalue().strip():
+            with open(dir_main_program / f"{main_program}_out.txt", "w") as f:
+                out.seek(0)
+                shutil.copyfileobj(out, f)
+        if err.getvalue().strip():
+            with open(dir_main_program / f"{main_program}_err.txt", "w") as f:
+                err.seek(0)
+                shutil.copyfileobj(err, f)
 
         # save any open figures
         eng.delete("*.png", nargout=0)  # ensure only the ones that belong are saved here
-        eng.save_open_figs(s_dir_main_program, nargout=0)
+        if save_figs:
+            eng.save_open_figs(s_dir_main_program, nargout=0)
 
         # check for new files created
         # and change names if necessary?
         # or we can assume that any new files that don't follow these^ conventions
         # or are .m files are new, products of the program
-    
+   
+        # close buffers
+        #print(out.getvalue())
+        #print(err.getvalue())
+        out.close()
+        err.close()
+ 
         # log time it took to complete
         elapsed_i = time.perf_counter() - start_i
         s_run_log += f"\ntime: {elapsed_i:.1f} s\n\n"
@@ -471,17 +493,25 @@ This is a chapter page.
 
 
 
-def run_matlab_script(sp_id, matlab_src_paths):
+def run_matlab_script(sp_id, matlab_src_paths, *,
+    **kwargs
+):
     """Run selected program(s) only, for testing purposes.
     
     sp_id : str or list(str)
         sp_id's to run
+
+
+    **kwargs passed on to `run_matlab_scripts()`
+
     """
 
     if isinstance(sp_id, str):
         sp_id_run = [sp_id]
     elif isinstance(sp_id, list):
         sp_id_run = sp_id[:]
+    else:
+        raise TypeError(f"`sp_id` should be str or list")
 
     matlab_src_paths_run = {
         k: v
@@ -510,6 +540,7 @@ if __name__ == "__main__":
     # write_md(sp_id_test, s, parent_dir="ch14")
 
     #> run all matlab scripts
+    #  note `save_figs=False` is an option now
     # run_matlab_scripts(matlab_srcs)
 
     #> create and write chapter pages
