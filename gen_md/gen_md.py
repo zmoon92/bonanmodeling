@@ -240,7 +240,8 @@ def run_matlab_scripts(matlab_src_paths):
         eng.cd(s_dir_main_program)         
    
         # TODO: close open figures before running
-        # else the previous fig gets saved in the dif when a program fails
+        # else the previous fig gets saved again in the new dir when a program fails or a program doesn't produce a fig
+        eng.close("all")
 
         to_call = getattr(eng, main_program)
         try:
@@ -260,6 +261,7 @@ def run_matlab_scripts(matlab_src_paths):
             err.write(dir_main_program / f"{main_program}_err.txt")
 
         # save any open figures
+        eng.delete("*.png")  # ensure only the ones that belong are saved here
         eng.save_open_figs(s_dir_main_program, nargout=0)
 
         # check for new files created
