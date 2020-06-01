@@ -48,7 +48,7 @@ def md_matlab_program(p, main=True):
     else:  # aux program
         code_css = ".aux-program-code"  # can be more than one
 
-    program_repo_rel_path = str(p.relative_to(ROOT))
+    program_repo_rel_path = p.relative_to(ROOT).as_posix()
 
     sep = '<span class="program-code-link-sep">|</span>'
 
@@ -261,7 +261,7 @@ def run_matlab_scripts(matlab_src_paths):
             err.write(dir_main_program / f"{main_program}_err.txt")
 
         # save any open figures
-        eng.delete("*.png")  # ensure only the ones that belong are saved here
+        eng.delete("*.png", nargout=0)  # ensure only the ones that belong are saved here
         eng.save_open_figs(s_dir_main_program, nargout=0)
 
         # check for new files created
@@ -472,6 +472,9 @@ if __name__ == "__main__":
     # s = create_md(sp_data[sp_id_test], matlab_srcs[sp_id_test])
     # write_md(sp_id_test, s)
     # write_md(sp_id_test, s, parent_dir="ch14")
+
+    #> run all matlab scripts
+    run_matlab_scripts(matlab_srcs)
 
     #> create and write chapter pages
     chapter_pages(chapter_titles)
