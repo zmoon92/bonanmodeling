@@ -1,0 +1,89 @@
+
+# Chapter names for chapters that have at least one Supplemental Program
+# might be simpler to include all of them (wouldn't need number as a kw?)
+book_chapters: 
+  - number: 2
+    title: "Quantitative Description of Ecosystems"
+  - number: 5
+    title: "Soil Temperature"
+  - number: 6
+    title: "Turbulent Fluxes and Scalar Profiles in the Surface Layer"
+  - number: 7
+    title: "Surface Energy Fluxes"
+  - number: 8
+    title: "Soil Moisture"
+  - number: 9 
+    title: "Hydrologic Scaling and Spatial Heterogeneity"
+  - number: 10 
+    title: "Leaf Temperature and Energy Fluxes"
+  - number: 11
+    title: "Leaf Photosynthesis"
+  - number: 12
+    title: "Stomatal Conductance"
+  - number: 13
+    title: "Plant Hydraulics"
+  - number: 14
+    title: "Radiative Transfer"
+  - number: 16
+    title: "Scalar Canopy Profiles"
+  - number: 17
+    title: "Biogeochemical Models"
+  - number: 18
+    title: "Soil Biogeochemistry"
+
+
+# 
+# * some have a longer desciption at the top that could be included too?
+#   could come up with something for the missing ones
+# * could include page number(s) in the book that the program is mentioned? 
+# * the identifiers in the book text are like "Supplementary Program 17.1"
+supplemental_programs:
+  - id: sp_02_01
+    title: "Calculate and graph leaf area density profiles"
+  - id: sp_02_02
+    title: "Leaf angle distributions"
+  - id: sp_05_01
+    title: "Calculate and graph thermal conductivity"
+  - id: sp_05_02
+    title: ""
+  - id: sp_05_03
+    title: ""
+  - id: sp_06_01
+    title: ""
+  - id: sp_06_02
+    title: ""
+  - id: sp_07_01
+    title: ""
+  - id: sp_08_01
+    title: ""
+  - id: sp_08_02
+    title: ""
+  - id: sp_09_01
+    title: ""
+  - id: sp_10_01
+    title: ""
+  - id: sp_10_02
+    title: ""
+  - id: sp_11_01
+    title: ""
+  - id: sp_12_01
+    title: ""
+  - id: sp_12_02
+    title: ""
+  - id: sp_13_01
+    title: ""
+  - id: sp_14_01
+    title: ""
+  - id: sp_14_02
+    title: ""
+  - id: sp_14_03
+    title: ""
+  - id: sp_14_04
+    title: ""
+  - id: sp_16_01
+    title: ""
+  - id: sp_17_01
+    title: ""
+  - id: sp_18_01
+    title: ""
+
