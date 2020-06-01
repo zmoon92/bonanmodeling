@@ -278,7 +278,7 @@ def chapter_pages(chapter_titles):
         s = f"""
 ---
 title: {title}
-permalink: /{ch_id}
+permalink: /{ch_id}/
 nav_order: {i}
 has_children: True
 ---
