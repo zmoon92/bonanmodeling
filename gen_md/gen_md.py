@@ -19,8 +19,7 @@ MD_OUT_ROOT = ROOT / "docs/pages"
 # to use when creating the links to the source files on GH
 # can also use Jekyll github-metadata plugin
 REPO_ROOT_URL_FOR_LINKS = "https://github.com/zmoon92/bonanmodeling/tree/master"
-
-
+REPO_ROOT_URL_FOR_RAW_LINKS = "https://raw.githubusercontent.com/zmoon92/bonanmodeling/gh-pages-dev"
 
 def md_matlab_program(p, main=True):
     """Create markdown to add to page for a given Matlab program.
@@ -72,6 +71,91 @@ def md_matlab_program(p, main=True):
     return s
 
 
+
+def md_text_output(p):
+    """Create markdown for a toggler to show given output file.
+
+    p : Path
+        to the file
+
+    """
+
+    file_name = p.name
+
+    with open(p, "r") as f:
+        file_contents = f.read().strip()
+
+    # detect if it is the standard output file
+    if file_name[:3] == "sp_" and file_name[-8:] == "_out.txt":
+        stdout = True
+    else:
+        stdout = False
+
+    if stdout:
+        file_note = " (standard output)"
+    else:
+        file_note = ""
+
+    code_css = ".main-program-output-text-file"
+
+    # TODO: a lot in here is repeated from the matlab program one
+
+    file_repo_rel_path = p.relative_to(ROOT).as_posix()
+
+    sep = '<span class="program-code-link-sep">|</span>'
+
+    s = f"""
+<details>
+  <summary markdown="span">
+    `{file_name}`{file_note}
+    {sep}
+    [View on GitHub {{% octicon mark-github %}}]({REPO_ROOT_URL_FOR_LINKS}/{file_repo_rel_path})
+    {sep}
+    [View raw]({REPO_ROOT_URL_FOR_RAW_LINKS}/{file_repo_rel_path})
+  </summary>
+
+```
+{file_contents}
+```
+{{: {code_css}}}
+
+</details>
+    """.strip()
+
+    return s
+
+
+
+def md_text_outputs(sp_id):
+    """For sp_id, search for output text files and generate md."""
+
+    # TODO: add fn to get the matlab programs as dict with sp_id keys. and use that the other places as well
+    dirs = get_matlab_program_dirs()
+    keys = [p.stem for p in dirs]
+    dir_ = dict(zip(keys, dirs))[sp_id]
+
+    # anything that isn't .m or .png *should* be an output (.txt or .dat)
+    all_files = list(dir_.glob("*"))
+    # print(all_files)
+    exclude = (".m", ".png")
+    files = [p for p in all_files if p.suffix not in exclude]
+    # print(files)
+    assert all(suff in (".txt", ".dat") for suff in set(p.suffix for p in files))
+
+    header = "## Text"
+
+    if files:
+        s_files = []
+        for i, file in enumerate(sorted(files)):
+            s_files.append(md_text_output(file))
+
+        return "\n\n".join([header] + s_files)
+
+    else:
+        return ""
+
+
+
 def md_figure(p, num=None):
     """Generate md snippet for given figure path."""
     if num is None:
@@ -95,14 +179,16 @@ Figure {num}
 
 
 def md_figures(sp_id):
-    """For sp_id, search for output figures and generated md."""
+    """For sp_id, search for output figures and generate md."""
 
     # TODO: add fn to get the matlab programs as dict with sp_id keys. and use that the other places as well
     dirs = get_matlab_program_dirs()
     keys = [p.stem for p in dirs]
     dir_ = dict(zip(keys, dirs))[sp_id]
 
-    figs = dir_.glob("*.png")
+    figs = list(dir_.glob("*.png"))
+
+    header = "## Figures"
 
     if figs:
 
@@ -110,7 +196,7 @@ def md_figures(sp_id):
         for i, fig in enumerate(sorted(figs)):
             s_figs.append(md_figure(fig, num=i+1))
 
-        return "\n\n".join(s_figs)
+        return "\n\n".join([header] + s_figs)
 
     else:
 
@@ -408,6 +494,10 @@ def create_md(sp_data, matlab_src_data):
     # figures
     figures = md_figures(sp_data["sp_id"])
 
+    # outputs
+    outputs = md_text_outputs(sp_data["sp_id"])
+    # print(outputs)
+
 #     # hardcode hack for now
 #     last_failed = [
 #         "sp_07_01", 
@@ -427,6 +517,10 @@ def create_md(sp_data, matlab_src_data):
 # #         """.strip()
 
 
+    # put in 
+    #  1. toc
+    #  {{:toc}}
+    # at top to get auto-generated TOC
 
     # create the str here so we can use f-string
     s = f"""
@@ -445,6 +539,8 @@ def create_md(sp_data, matlab_src_data):
 # Output
 
 {figures}
+
+{outputs}
 
     """.strip()
 
@@ -493,8 +589,8 @@ This is a chapter page.
 
 
 
-def run_matlab_script(sp_id, matlab_src_paths, *,
-    **kwargs
+def run_matlab_script(sp_id, matlab_src_paths, #*,
+    # **kwargs
 ):
     """Run selected program(s) only, for testing purposes.
     
