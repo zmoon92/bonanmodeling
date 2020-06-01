@@ -383,23 +383,23 @@ def create_md(sp_data, matlab_src_data):
     # figures
     figures = md_figures(sp_data["sp_id"])
 
-    # hardcode hack for now
-    last_failed = [
-        "sp_07_01", 
-        "sp_11_01",
-        "sp_12_01",
-        "sp_12_02",
-        "sp_13_01",
-        "sp_14_03",
-        "sp_16_01",
-    ]
-    if sp_data["sp_id"] in last_failed:
-        figures = """
-Running the program failed.
+#     # hardcode hack for now
+#     last_failed = [
+#         "sp_07_01", 
+#         "sp_11_01",
+#         "sp_12_01",
+#         "sp_12_02",
+#         "sp_13_01",
+#         "sp_14_03",
+#         "sp_16_01",
+#     ]
+#     if sp_data["sp_id"] in last_failed:
+#         figures = """
+# Running the program failed.
 
-See [the run log](https://github.com/zmoon92/bonanmodeling/blob/gh-pages-dev/gen_md/matlab_run_log.txt).
+# # See [the run log](https://github.com/zmoon92/bonanmodeling/blob/gh-pages-dev/gen_md/matlab_run_log.txt).
 
-        """.strip()
+# #         """.strip()
 
 
 
@@ -507,10 +507,10 @@ if __name__ == "__main__":
     # write_md(sp_id_test, s, parent_dir="ch14")
 
     #> run all matlab scripts
-    run_matlab_scripts(matlab_srcs)
+    # run_matlab_scripts(matlab_srcs)
 
     #> create and write chapter pages
-    chapter_pages(chapter_titles)
+    # chapter_pages(chapter_titles)
 
     #> create and write all md for program pages
     for sp_id, sp_data_id in sp_data.items():
