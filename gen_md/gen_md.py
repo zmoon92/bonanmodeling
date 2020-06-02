@@ -19,7 +19,8 @@ MD_OUT_ROOT = ROOT / "docs/pages"
 # to use when creating the links to the source files on GH
 # can also use Jekyll github-metadata plugin
 REPO_ROOT_URL_FOR_LINKS = "https://github.com/zmoon92/bonanmodeling/tree/master"
-REPO_ROOT_URL_FOR_RAW_LINKS = "https://raw.githubusercontent.com/zmoon92/bonanmodeling/gh-pages-dev"
+# REPO_ROOT_URL_FOR_RAW_LINKS = "https://raw.githubusercontent.com/zmoon92/bonanmodeling/gh-pages-dev"
+REPO_ROOT_URL_FOR_RAW_LINKS = "https://raw.githubusercontent.com/zmoon92/bonanmodeling/master"
 
 def md_matlab_program(p, main=True):
     """Create markdown to add to page for a given Matlab program.
@@ -194,11 +195,8 @@ def md_figure(p, num=None):
         num = "X"
 
     # TODO: possibly soft-link the outputs to a location in /docs instead
-    # but hack for now
-    base_url = "https://raw.githubusercontent.com/zmoon92/bonanmodeling/gh-pages-dev"
-
     p_rr = p.relative_to(ROOT).as_posix()
-    url = f"{base_url}/{p_rr}"
+    url = f"{REPO_ROOT_URL_FOR_RAW_LINKS}/{p_rr}"
 
     s = f"""
 Figure {num}
