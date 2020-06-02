@@ -602,6 +602,12 @@ def chapter_pages(chapter_titles):
     # TODO: add descriptions from http://www.cgd.ucar.edu/staff/bonan/ecomod/index.html?
 
     for i, (num, title) in enumerate(sorted(chapter_titles.items())):
+
+        # hack for now
+        if title[1] == "." or title[2] == ".":
+            real_title = title[title.index(".")+2:]
+        else:
+            real_title = title
         
         ch_id = f"{num:02d}"
 
@@ -613,7 +619,9 @@ nav_order: {i}
 has_children: True
 ---
 
-This is a chapter page.
+This is a chapter page for:  
+Chapter {num} -- {real_title}
+
         """.strip()
 
         with open(MD_OUT_ROOT / f"ch{ch_id}.md", "w") as f:
