@@ -3,18 +3,17 @@
 
 We need to generate md files for the static site generator (SSG) to read.
 
-Currently planning to use Jekyll, with the just-the-docs theme.
+We use Jekyll, with the [just-the-docs theme](https://pmarsceill.github.io/just-the-docs/).
 
 ### Plan
 
 The pages will include:
 * [x] main program source code
-* [ ] outputs of the main program (figures and text output)
-  * run using Matlab's matlab.engine for Python
-* [ ] aux program source code (hidden by default)
-* [ ] links to the source files on GH (master branch)
-  * links to the md files on gh-pages branch?
+* [x] outputs of the main program (figures and text output)
+  * run using Matlab's [engine for Python](https://www.mathworks.com/help/matlab/matlab-engine-for-python.html)
+* [x] aux program source code (hidden by default)
+* [x] links to the source files on GH (master branch)
+* [ ] links to relevant md source files (editable ones, not auto-generated ones)
 
-May nest by chapter, since I plan to have the navigation nested in that way.
-
-Make use of SSG filters instead of including HTML in the md files.
+Other:
+* [ ] Make use of SSG filters instead of including HTML in the md files.
